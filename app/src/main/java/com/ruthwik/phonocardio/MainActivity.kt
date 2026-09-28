@@ -171,11 +171,14 @@ class PhonoViewModel : ViewModel() {
     override fun onCleared() { engine?.stop(); super.onCleared() }
 }
 
-private val Bg = Color(0xFF06101D)
-private val Panel = Color(0xFF0D1A2B)
-private val Primary = Color(0xFF43E6D3)
-private val Text = Color(0xFFEAF3FF)
-private val Muted = Color(0xFF8EA4BD)
+private val Bg = Color(0xFF0B1117)
+private val Panel = Color(0xFF141B23)
+private val PanelElevated = Color(0xFF18222C)
+private val Primary = Color(0xFF5B8DB8)
+private val Secondary = Color(0xFF6EA89A)
+private val Text = Color(0xFFE5EBF0)
+private val Muted = Color(0xFF98A6B3)
+private val Outline = Color(0xFF303B46)
 
 @Composable
 private fun Metric(title: String, value: String, detail: String, modifier: Modifier = Modifier) {
@@ -225,8 +228,8 @@ private fun HomeScreen(vm: PhonoViewModel, onMeasure: () -> Unit, onCalibrate: (
                 Text("PhonoCardio", color = Text, style = MaterialTheme.typography.headlineLarge)
                 Text("Digital heart-sound research platform", color = Primary, style = MaterialTheme.typography.labelLarge)
             }
-            Surface(shape = RoundedCornerShape(50), color = if (vm.calibration.completed) Primary.copy(alpha = .14f) else Muted.copy(alpha = .12f)) {
-                Text(if (vm.calibration.completed) "READY" else "SETUP", color = if (vm.calibration.completed) Primary else Muted, modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp))
+            Surface(shape = RoundedCornerShape(50), color = if (vm.calibration.completed) Secondary.copy(alpha = .14f) else Muted.copy(alpha = .12f)) {
+                Text(if (vm.calibration.completed) "READY" else "SETUP", color = if (vm.calibration.completed) Secondary else Muted, modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp))
             }
         }
         Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(24.dp)) {
@@ -255,7 +258,7 @@ private fun HomeScreen(vm: PhonoViewModel, onMeasure: () -> Unit, onCalibrate: (
             Metric("INPUT", if (state.headsetDetected) "Connected" else "Not detected", "Headset microphone", Modifier.weight(1f))
             Metric("CALIBRATION", if (vm.calibration.completed) "Valid" else "Required", if (vm.calibration.completed) formatTime(vm.calibration.timestampMs) else "Open Calibrate", Modifier.weight(1f))
         }
-        Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF10233A)), shape = RoundedCornerShape(18.dp)) {
+        Card(colors = CardDefaults.cardColors(containerColor = PanelElevated), shape = RoundedCornerShape(18.dp)) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("Research workflow", color = Text, style = MaterialTheme.typography.titleMedium)
                 Text("Every completed session is stored locally in Measurement History. Reference Validation lets you pair the measured heart rate with simultaneous ECG, PPG, or another validated reference.", color = Muted)
@@ -273,7 +276,7 @@ private fun CalibrationScreen(vm: PhonoViewModel, scope: CoroutineScope) {
         Text("6-second input workflow: 2 seconds quiet baseline, then 4 seconds gentle precordial contact. This calibrates input conditions, not clinical accuracy.", color = Muted)
         Card(colors = CardDefaults.cardColors(containerColor = Panel)) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(if (vm.calibration.completed) "✓ CALIBRATION VALID" else "CALIBRATION REQUIRED", color = if (vm.calibration.completed) Primary else Muted)
+                Text(if (vm.calibration.completed) "✓ CALIBRATION VALID" else "CALIBRATION REQUIRED", color = if (vm.calibration.completed) Secondary else Muted)
                 Text(vm.calibrationMessage, color = Text)
                 LinearProgressIndicator(progress = { vm.calibrationProgress }, modifier = Modifier.fillMaxWidth())
                 if (vm.calibration.completed) Text("Peak %.5f • Quality %.0f%% • %s".format(vm.calibration.peakLevel, vm.calibration.quality * 100f, formatTime(vm.calibration.timestampMs)), color = Muted)
@@ -396,14 +399,20 @@ fun App(vm: PhonoViewModel = viewModel()) {
     val destinations = listOf("Home", "Measure", "Calibrate", "History", "Validate")
     MaterialTheme(
         colorScheme = darkColorScheme(
-            primary = Primary, onPrimary = Bg, background = Bg, surface = Panel,
-            onSurface = Text, surfaceVariant = Color(0xFF15263B), onSurfaceVariant = Muted
+            primary = Primary, onPrimary = Color(0xFFFFFFFF),
+            primaryContainer = Color(0xFF24394B), onPrimaryContainer = Color(0xFFDCEBFA),
+            secondary = Secondary, onSecondary = Color(0xFFFFFFFF),
+            secondaryContainer = Color(0xFF243A36), onSecondaryContainer = Color(0xFFD9EEE8),
+            background = Bg, surface = Panel, surfaceContainer = PanelElevated,
+            onSurface = Text, surfaceVariant = Color(0xFF202A33), onSurfaceVariant = Muted,
+            outline = Outline, outlineVariant = Color(0xFF26313B),
+            error = Color(0xFFD97878), onError = Color(0xFFFFFFFF)
         )
     ) {
         Scaffold(
             containerColor = Bg,
             bottomBar = {
-                NavigationBar(containerColor = Color(0xFF091522)) {
+                NavigationBar(containerColor = Color(0xFF101820), tonalElevation = 3.dp) {
                     val icons = listOf(Icons.Rounded.Home, Icons.Rounded.MonitorHeart, Icons.Rounded.Tune, Icons.Rounded.History, Icons.Rounded.Science)
                     destinations.forEachIndexed { i, title ->
                         NavigationBarItem(
