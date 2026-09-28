@@ -1,8 +1,9 @@
 <resources>
-    <style name="Theme.PhonoCardio" parent="android:style/Theme.Material.Light.NoActionBar">
+    <style name="Theme.PhonoCardio" parent="android:style/Theme.Material.NoActionBar">
         <item name="android:fontFamily">sans</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:statusBarColor">#F7F8FA</item>
-        <item name="android:navigationBarColor">#F7F8FA</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">#06101D</item>
+        <item name="android:navigationBarColor">#06101D</item>
+        <item name="android:windowActionModeOverlay">true</item>
     </style>
 </resources>
