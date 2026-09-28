@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List, Optional, Literal
 import numpy as np
 import pywt
 from fastapi import FastAPI, HTTPException
@@ -13,7 +13,7 @@ app = FastAPI(title="PhonoCardio Signal Processing API", version="0.2.0")
 class SignalRequest(BaseModel):
     samples: List[float] = Field(min_length=256, max_length=2_000_000)
     sample_rate: int = Field(default=16000, ge=4000, le=96000)
-    mains_hz: int = Field(default=50, pattern="^(50|60)$")
+    mains_hz: Literal[50, 60] = 50
 
 
 class AnalysisResponse(BaseModel):
