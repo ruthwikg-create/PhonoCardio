@@ -2,8 +2,8 @@
     <style name="Theme.PhonoCardio" parent="android:style/Theme.Material.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:windowLightStatusBar">false</item>
-        <item name="android:statusBarColor">#06101D</item>
-        <item name="android:navigationBarColor">#06101D</item>
+        <item name="android:statusBarColor">#0B1117</item>
+        <item name="android:navigationBarColor">#0B1117</item>
         <item name="android:windowActionModeOverlay">true</item>
     </style>
 </resources>
