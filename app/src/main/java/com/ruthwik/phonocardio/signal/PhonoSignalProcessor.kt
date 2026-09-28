@@ -17,7 +17,7 @@ class PhonoSignalProcessor(private val sampleRate: Int = 16_000) {
         var signalPower=0.0; var residualPower=0.0; var clipped=0; var localMax=0.0
         input.forEachIndexed { i,raw ->
             val x=raw/32768.0
-            if(abs(raw)>32000) clipped++
+            if(abs(raw.toInt())>32000) clipped++
             dc=0.9985*dc+0.0015*x
             val centered=x-dc
             val hp=0.992*(hpY+centered-hpX); hpX=centered; hpY=hp
