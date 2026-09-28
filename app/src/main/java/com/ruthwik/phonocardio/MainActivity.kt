@@ -14,6 +14,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.MonitorHeart
+import androidx.compose.material.icons.rounded.Science
+import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -211,6 +217,55 @@ private fun formatTime(ms: Long): String =
     if (ms == 0L) "Not calibrated" else SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault()).format(Date(ms))
 
 @Composable
+private fun HomeScreen(vm: PhonoViewModel, onMeasure: () -> Unit, onCalibrate: () -> Unit) {
+    val state by vm.state.collectAsState()
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Column {
+                Text("PhonoCardio", color = Text, style = MaterialTheme.typography.headlineLarge)
+                Text("Digital heart-sound research platform", color = Primary, style = MaterialTheme.typography.labelLarge)
+            }
+            Surface(shape = RoundedCornerShape(50), color = if (vm.calibration.completed) Primary.copy(alpha = .14f) else Muted.copy(alpha = .12f)) {
+                Text(if (vm.calibration.completed) "READY" else "SETUP", color = if (vm.calibration.completed) Primary else Muted, modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp))
+            }
+        }
+        Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(24.dp)) {
+            Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("Start a measurement", color = Text, style = MaterialTheme.typography.titleLarge)
+                Text("Use a wired headset or contact microphone. The microphone captures acoustic heart sounds; the earphone speaker is not the sensor.", color = Muted)
+                Button(onClick = { if (vm.calibration.completed) onMeasure() else onCalibrate() }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp)) {
+                    Text(if (vm.calibration.completed) "START MEASUREMENT" else "SET UP & CALIBRATE")
+                }
+            }
+        }
+        Text("HOW IT WORKS", color = Muted, style = MaterialTheme.typography.labelLarge)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Metric("01", "INPUT", "Connect mic", Modifier.weight(1f))
+            Metric("02", "CALIBRATE", "Quiet + contact", Modifier.weight(1f))
+            Metric("03", "MEASURE", "Record + analyze", Modifier.weight(1f))
+        }
+        Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(20.dp)) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Before you start", color = Text, style = MaterialTheme.typography.titleMedium)
+                Text("1  Connect the microphone\n2  Keep the phone still\n3  Place the microphone gently on the precordial area\n4  Complete calibration\n5  Run a measurement for at least 10 seconds", color = Muted)
+            }
+        }
+        Text("CURRENT STATUS", color = Muted, style = MaterialTheme.typography.labelLarge)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Metric("INPUT", if (state.headsetDetected) "Connected" else "Not detected", "Headset microphone", Modifier.weight(1f))
+            Metric("CALIBRATION", if (vm.calibration.completed) "Valid" else "Required", if (vm.calibration.completed) formatTime(vm.calibration.timestampMs) else "Open Calibrate", Modifier.weight(1f))
+        }
+        Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF10233A)), shape = RoundedCornerShape(18.dp)) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("Research workflow", color = Text, style = MaterialTheme.typography.titleMedium)
+                Text("Every completed session is stored locally in Measurement History. Reference Validation lets you pair the measured heart rate with simultaneous ECG, PPG, or another validated reference.", color = Muted)
+            }
+        }
+        Text("Research / educational prototype. Heart-rate performance must be established against a reference method before clinical interpretation.", color = Muted, style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+@Composable
 private fun CalibrationScreen(vm: PhonoViewModel, scope: CoroutineScope) {
     val state by vm.state.collectAsState()
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -335,22 +390,38 @@ private fun ValidationScreen(vm: PhonoViewModel) {
 fun App(vm: PhonoViewModel = viewModel()) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val scope = rememberCoroutineScope()
-    var selectedTab by remember { mutableIntStateOf(0) }
-    var permission by remember { mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) }
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { permission = it }
+    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
     LaunchedEffect(Unit) { vm.attach(context) }
-    MaterialTheme(colorScheme = darkColorScheme(primary = Primary, background = Bg, surface = Panel, onSurface = Text)) {
-        Surface(Modifier.fillMaxSize(), color = Bg) {
-            Column(Modifier.fillMaxSize()) {
-                TabRow(selectedTabIndex = selectedTab) {
-                    listOf("Live", "Calibrate", "History", "Validate").forEachIndexed { i, title ->
-                        Tab(selected = selectedTab == i, onClick = { selectedTab = i }, text = { Text(title) })
+    val destinations = listOf("Home", "Measure", "Calibrate", "History", "Validate")
+    MaterialTheme(
+        colorScheme = darkColorScheme(
+            primary = Primary, onPrimary = Bg, background = Bg, surface = Panel,
+            onSurface = Text, surfaceVariant = Color(0xFF15263B), onSurfaceVariant = Muted
+        )
+    ) {
+        Scaffold(
+            containerColor = Bg,
+            bottomBar = {
+                NavigationBar(containerColor = Color(0xFF091522)) {
+                    val icons = listOf(Icons.Rounded.Home, Icons.Rounded.MonitorHeart, Icons.Rounded.Tune, Icons.Rounded.History, Icons.Rounded.Science)
+                    destinations.forEachIndexed { i, title ->
+                        NavigationBarItem(
+                            selected = selectedTab == i,
+                            onClick = { selectedTab = i },
+                            icon = { Icon(icons[i], contentDescription = title) },
+                            label = { Text(title, maxLines = 1) }
+                        )
                     }
                 }
+            }
+        ) { padding ->
+            Box(Modifier.fillMaxSize().padding(padding)) {
                 when (selectedTab) {
-                    0 -> LiveScreen(vm, scope) { launcher.launch(Manifest.permission.RECORD_AUDIO) }
-                    1 -> CalibrationScreen(vm, scope)
-                    2 -> HistoryScreen(vm)
+                    0 -> HomeScreen(vm, onMeasure = { selectedTab = 1 }, onCalibrate = { selectedTab = 2 })
+                    1 -> LiveScreen(vm, scope) { launcher.launch(Manifest.permission.RECORD_AUDIO) }
+                    2 -> CalibrationScreen(vm, scope)
+                    3 -> HistoryScreen(vm)
                     else -> ValidationScreen(vm)
                 }
             }
