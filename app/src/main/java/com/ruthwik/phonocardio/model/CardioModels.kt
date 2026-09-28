@@ -14,5 +14,42 @@ data class SignalSnapshot(
     val running: Boolean = false,
     val status: String = "READY",
     val processingLatencyMs: Long = 0,
-    val sampleRate: Int = 16_000
+    val sampleRate: Int = 16_000,
+    val measurementDurationSec: Int = 0
+)
+
+data class CalibrationProfile(
+    val completed: Boolean = false,
+    val timestampMs: Long = 0L,
+    val sampleRate: Int = 16_000,
+    val baselineNoise: Float = 0f,
+    val peakLevel: Float = 0f,
+    val quality: Float = 0f,
+    val version: String = "CAL-1.0"
+)
+
+data class MeasurementRecord(
+    val id: Long,
+    val timestampMs: Long,
+    val durationSec: Int,
+    val heartRateBpm: Int?,
+    val rrMs: Int?,
+    val beatCount: Int,
+    val quality: Float,
+    val confidence: Float,
+    val snrDb: Float,
+    val status: String,
+    val sampleRate: Int,
+    val algorithmVersion: String = "DSP-0.2"
+)
+
+data class ReferenceValidationRecord(
+    val id: Long,
+    val timestampMs: Long,
+    val measuredBpm: Int,
+    val referenceBpm: Int,
+    val source: String,
+    val absoluteErrorBpm: Float,
+    val signedErrorBpm: Float,
+    val percentError: Float
 )
