@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-    <application android:theme="@style/Theme.PhonoCardio" android:label="@string/app_name" android:allowBackup="true" android:supportsRtl="true">
+    <application android:theme="@style/Theme.PhonoCardio" android:label="@string/app_name" android:icon="@drawable/ic_phonocardio" android:roundIcon="@drawable/ic_phonocardio" android:allowBackup="true" android:supportsRtl="true">
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
